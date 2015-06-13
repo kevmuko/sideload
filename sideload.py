@@ -276,7 +276,7 @@ class sideload:
         if resp["resultCode"] == 0:
             logger.info("Device: %s was added to the Dev Center" % self.udid)
         elif resp["resultCode"] == 35:
-            logger.info("Device: %s was already added to the Dev Center" % self.udid)
+            logger.info("Device: %s was already added to the Dev Center. Reason: %s" % (self.udid, resp["userString"]))
         else:
             logger.error("Unable to add device: %s to the Dev Center. Reason: %s" % (self.udid, resp["userString"]))
             sys.exit(0)
