@@ -77,10 +77,6 @@ class sideload:
         self.browser.set_handle_robots(False)
         self.browser.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(), max_time=1)
         self.browser.addheaders = [('User-Agent', "Xcode"), ('Accept', 'text/x-xml-plist'), ('X-Xcode-Version', '7.0 (7A120f)')]
-
-        self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookiejar), SmartRedirectHandler())
-        urllib2.install_opener(self.opener)
-
     
     def downloadProvisioningProfile(self, appIdId):
         requestId = str(uuid.uuid4()).upper()
