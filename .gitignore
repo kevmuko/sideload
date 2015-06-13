@@ -1,0 +1,4 @@
+*.pyc
+*.mobileprovision
+csr
+csr/*
