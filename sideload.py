@@ -93,7 +93,21 @@ class sideload:
         root = plistlib.readPlistFromString(responseData)
         return root["provisioningProfile"]
 
-    def addAppId(self, name, identifier):
+    def removeAppId(self, appIdId):
+        requestId = str(uuid.uuid4()).upper()
+        postData = {"clientId": self.clientId,
+                    "myacinfo": self.accountBlob,
+                    "protocolVersion": "QH65B2",
+                    "requestId": requestId,
+                    "teamId": self.teamId,
+                    "appIdId": appIdId,
+                    "userLocale": ["en_US"]}
+        plist = plistlib.writePlistToString(postData)
+        response = self.browser.open(urllib2.Request("https://developerservices2.apple.com/services/QH65B2/ios/deleteAppId.action?clientId=" + self.clientId, plist, {'Content-Type': 'text/x-xml-plist'}))
+        responseData = response.read()
+        return responseData
+
+    def addAppId(self, identifier):
         requestId = str(uuid.uuid4()).upper()
         postData = {"clientId": self.clientId,
                     "myacinfo": self.accountBlob,
@@ -102,8 +116,8 @@ class sideload:
                     "teamId": self.teamId,
                     "entitlements": [],
                     "identifier": identifier,
-                    "name": name,
-                    "appIdName": name,
+                    "name": "Xcode iOS App ID " + identifier.replace(".", " "),
+                    "appIdName": "Xcode iOS App ID " + identifier.replace(".", " "),
                     "userLocale": ["en_US"]}
         plist = plistlib.writePlistToString(postData)
         response = self.browser.open(urllib2.Request("https://developerservices2.apple.com/services/QH65B2/ios/addAppId.action?clientId=" + self.clientId, plist, {'Content-Type': 'text/x-xml-plist'}))
@@ -285,6 +299,7 @@ class sideload:
         appIdId = ""
         appIds = self.listAppIds()
         for appId in appIds:
+            # self.removeAppId(appId["appIdId"])
             if appId["identifier"] == self.app_id:
                 appIdId = appId["appIdId"]
                 logger.info("Found existing app identifier: %s", self.app_id)
@@ -292,7 +307,7 @@ class sideload:
         
         if appIdId == "":
             # add appId
-            resp = self.addAppId("dev", self.app_id)
+            resp = self.addAppId(self.app_id)
             if resp["resultCode"] == 0:
                 appIdId = resp["appId"]["appIdId"]
                 logger.info("Added app identifier: %s", self.app_id)
@@ -309,6 +324,10 @@ class sideload:
         fh.write(profileData)
         fh.close()
         logger.info("Saved provisioning profile to ./profile.mobileprovision")
+
+        # delete app id
+        self.removeAppId(appIdId)
+        logger.info("Removed App ID: %s", appIdId)
 
 # create logger
 logger = logging.getLogger("sideload")
